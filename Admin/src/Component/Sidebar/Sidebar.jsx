@@ -8,9 +8,12 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div>
-        <a href="/" className="text-center">
+        {/* <a href="/" className="text-center">
           <img src={logo} className="logo" alt="dashboard logo" />
-        </a>
+        </a> */}
+        <h4 style={{color:'white' , fontWeight:'800' , padding:'10px' , fontSize:'18px'}}>Dushad Infra Project Pvt. Ltd.
+        (GK EARTH MOVERS)</h4>
+        <hr style={{color:'white'}} />
       </div>
       {/* <h5>
         <Link to="/login">

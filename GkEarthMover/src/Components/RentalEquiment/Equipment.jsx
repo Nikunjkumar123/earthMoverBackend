@@ -1,152 +1,109 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Equipment.css";
 import { Link, useNavigate } from "react-router-dom";
-import Tata200 from "../../Assets/Tata Hitachi 200 Excavator.webp";
-import leeboy_414 from "../../Assets/Liu_Gong_414 Grader.webp";
-import CaseRoller from "../../Assets/Case New Holand 1107 Soil Compactor.webp";
-import HYWA8899 from "../../Assets/HYVA-2844 Tata Motors.jpeg";
-import Case9868 from "../../Assets/Case-9868.webp";
-import Sanystc from "../../Assets/Sany-stc1000s-100-ton-truck-crane-500x500.webp";
-
+import axios from "axios";
 
 const Equipment = () => {
-  const [selectedTab, setSelectedTab] = useState("Moter Grader");
+  const [selectedTab, setSelectedTab] = useState("sew"); // Default category
+  const [categoryId, setCatId] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
 
-  const [equipmentData] = useState([
-    {
-      id: 1,
-      name: "Grader LiuGong CLG-414",
-      category: "Moter Grader",
-      image: leeboy_414,
-      deliveryInfo: "LiuGang India Private Limited",
-      specs: ["Modal - CLG4160D"],
-    },
+  // Fetch categories from API
+  const getingCategory = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4040/admin/v1/categories"
+      );
+      setCategories(response.data.categories);
+      // Initially show subCategories for the default category (first one in the list)
+      if (response.data.categories.length > 0) {
+        setSubCategories(response.data.categories[0].subCategories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories", error);
+    }
+  };
 
-    {
-      id: 3,
-      name: "TATA HITACHI-200LC",
-      category: "Excavator Machine",
-      image: Tata200,
-      deliveryInfo: "TATA Hitachi",
-      specs: [""],
-    },
+  useEffect(() => {
+    getingCategory();
+  }, []);
 
-    {
-      id: 12,
-      name: "HYVA-2844",
-      category: "Dumper/Hywa",
-      image: HYWA8899,
-      deliveryInfo: "Tata Moters",
-      specs: ["Modal - HYVA-8899"],
-    },
-
-    {
-      id: 18,
-      name: "Backhoe Loader Case-9868",
-      category: "Backhoe Loader/JCB",
-      image: Case9868,
-      deliveryInfo: "Case Constructions",
-      specs: [""],
-    },
-
-    {
-      id: 23,
-      name: "Case -1107 Roller",
-      category: "Soil Compactor/Roller",
-      image: CaseRoller,
-      deliveryInfo: "Case New Holand",
-      specs: [""],
-    },
-
-    {
-      id: 31,
-      name: "Sany Stc1000",
-      category: "Cran",
-      image: Sanystc,
-      deliveryInfo: "Sany Heavy Industry India Pvt. Ltd.",
-      specs: [""],
-    },
-  ]);
+  useEffect(() => {
+    const selectedCategory = categories.find(
+      (category) => category.category === selectedTab
+    );
+    if (selectedCategory) {
+      setSubCategories(selectedCategory.subCategories);
+      setCatId(selectedCategory._id);
+    }
+  }, [selectedTab, categories]);
 
   const navigate = useNavigate();
 
-  // Filter equipment data based on selected tab
-  const filteredEquipmentData = equipmentData.filter(
-    (equipment) => equipment.category === selectedTab
-  );
-
   return (
-    <>
-      <div className="container RentalEquipment">
-        <div className="row">
-          <div className="equipment-title">
-            <h3>Awesome Equipment</h3>
-            <h1>Featured Rental Equipment</h1>
-            <p>
-              Our commitment to quality ensures that every piece of equipment we
-              offer is maintained to the highest standards, delivering the
-              performance needed on-site.
-            </p>
-          </div>
+    <div className="container RentalEquipment">
+      <div className="row">
+        <div className="equipment-title">
+          <h3>Awesome Equipment</h3>
+          <h1>Featured Rental Equipment</h1>
+          <p>
+            Our commitment to quality ensures that every piece of equipment we
+            offer is maintained to the highest standards, delivering the
+            performance needed on-site.
+          </p>
+        </div>
 
-          {/* Tabs */}
-          <div className="tab-section">
-            {[
-              "Moter Grader",
-              "Excavator Machine",
-              "Dumper/Hywa",
-              "Backhoe Loader/JCB",
-              "Soil Compactor/Roller",
-              "Cran",
-            ].map((tab) => (
-              <button
-                key={tab}
-                className={`tab-btn ${selectedTab === tab ? "active" : ""}`}
-                onClick={() => setSelectedTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        {/* Tabs */}
+        <div className="tab-section">
+          {categories.map((tab) => (
+            <button
+              key={tab._id}
+              className={`tab-btn ${
+                selectedTab === tab.category ? "active" : ""
+              }`}
+              onClick={() => {
+                setSelectedTab(tab.category);
+              }}
+            >
+              {tab.category}
+            </button>
+          ))}
+        </div>
 
-          {/* Equipment Cards */}
-          <div className="row m-0 p-0">
-            {filteredEquipmentData.map((equipment) => (
-              <div key={equipment.id} className="col-lg-4 col-md-6">
+        {/* SubCategory Cards */}
+
+        <div className="row m-0 p-0">
+          {subCategories.length > 0 ? (
+            subCategories.map((subCategory) => (
+              <div key={subCategory._id} className="col-lg-4 col-md-6">
                 <div className="card equipment-card">
-                  <div
-                    className="equipment-img"
-                    onClick={() => navigate(`/subEquipment`)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <div className="equipment-img">
                     <img
-                      src={equipment.image}
+                      src={subCategory.Image}
                       className="card-img-top"
-                      alt={equipment.name}
+                      alt={subCategory.MachineName}
                     />
                   </div>
                   <div className="card-body">
-                    <h2 className="card-title">{equipment.name}</h2>
+                    <h2 className="card-title">{subCategory.Category}</h2>
                     <hr />
-                    <h4 className="delivery-info">{equipment.deliveryInfo}</h4>
+                    <h4 className="delivery-info">{subCategory.CompanyName}</h4>
                   </div>
                   <div className="card-footer">
-                  <Link to="/subEquipment">
-                    <button
-                      className="reserve-btn"
-                     
-                    >
-                      View All
-                    </button>
+                    <Link to={`/subEquipment/${categoryId}/${subCategory._id}`}>
+                      <button className="reserve-btn">View All</button>
                     </Link>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p>No subcategories available for this category.</p>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

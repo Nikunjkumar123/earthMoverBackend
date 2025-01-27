@@ -7,7 +7,7 @@ const EditCategory = () => {
   const navigate = useNavigate();
   
   const [categoryName, setCategoryName] = useState("");
-  const [image, setImage] = useState(null);
+  // const [image, setImage] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ const EditCategory = () => {
     try {
       const response = await axios.get(`http://localhost:4040/admin/v1/categories/single/${id}`);
       setCategoryName(response.data.data.category);
-      setImage(response.data.data.image);
+      // setImage(response.data.data.image);
       // console.log(response.data.data.image)
     } catch (err) {
       setError("Error fetching category data.");
@@ -34,9 +34,9 @@ const EditCategory = () => {
     // Prepare the updated data
     const formData = new FormData();
     formData.append("category", categoryName);
-    if (image) {
-      formData.append("image", image);
-    }
+    // if (image) {
+    //   formData.append("image", image);
+    // }
 
     try {
       const response = await axios.patch(
@@ -71,7 +71,7 @@ const EditCategory = () => {
             required
           />
         </div>
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label htmlFor="image" className="form-label">Category Image</label>
           <input
             type="file"
@@ -79,7 +79,7 @@ const EditCategory = () => {
             className="form-control"
             onChange={(e) => setImage(e.target.files[0])}
           />
-        </div>
+        </div> */}
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? "Updating..." : "Update Category"}
         </button>

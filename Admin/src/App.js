@@ -14,6 +14,7 @@ import Contact from "./Pages/ContactUs/Contact";
 import AddCategories from "./Pages/Categories/AddCategories";
 import EditCategories from "./Pages/Categories/EditCategories";
 import EditsubCategories from "./Pages/SubCategories/EditsubCategories.jsx";
+import EditsubCategoriesProduc from "./Pages/Product/EditsubCategoriesProduc.jsx";
 import AddSubCategories from "./Pages/SubCategories/AddSubCategories";
 import AddProduct from "./Pages/Product/AddProduct";
 import ContactEquipment from "./Pages/ContactEquipment/ContactEquipment";
@@ -39,6 +40,8 @@ const App = () => {
             <Route path="/sub-categories" element={<Subcategories />} />
             <Route path="/add-subcategories" element={<AddSubCategories />} />
             <Route path="/edit-subcategories/:categoryId/:subCategoryId" element={<EditsubCategories />} />
+
+            <Route path="/edit-subcategoriesP/:categoryId/:subCategoryId/:producId" element={<EditsubCategoriesProduc />} />
             
             <Route path="/products" element={<Product />} />
             <Route path="/add-products" element={<AddProduct />} />

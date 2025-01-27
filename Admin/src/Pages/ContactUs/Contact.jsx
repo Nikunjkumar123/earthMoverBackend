@@ -1,46 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Contact = () => {
-  const contacts = [
-    {
-      id: 1,
-      name: "Deepanshu",
-      email: "vipsoft@hotmial.com",
-      mobile: "",
-      message:
-        "Your account has been dormant for 30 days. To stop removal and claim your funds, please access your account and request a payout within 24 hours. For support, visit our Telegram group: https://tinyurl.com/abc123",
-      date: "20-01-2025",
-    },
-    {
-      id: 2,
-      name: "Jessica Smith",
-      email: "morrison1@icloud.com",
-      mobile: "1234567890",
-      message: "Hi Admin, I need assistance with...",
-      date: "19-01-2025",
-    },
-    // Add more entries as needed
-  ];
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch contacts from the API
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await axios.get("http://localhost:4040/admin/v1/user/contact-us");
+        setContacts(response.data.contacts); // Assuming the API returns an array of contacts
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch contacts. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
 
   const handleEdit = (id) => {
     console.log(`Edit contact with ID: ${id}`);
     // Add your logic for editing a contact
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this contact?")) {
-      console.log(`Delete contact with ID: ${id}`);
-      // Add your logic for deleting a contact
+      try {
+        await axios.delete(`http://localhost:4040/admin/v1/user/up-ed/contact/${id}`);
+        setContacts(contacts.filter((contact) => contact._id !== id));
+        console.log(`Deleted contact with ID: ${id}`);
+      } catch (err) {
+        console.error("Failed to delete contact:", err.response?.data?.msg || err.message);
+      }
     }
   };
+
+  if (loading) return <p>Loading contacts...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="fw-bold">Contact Us</h2>
-        <button className="btn btn-primary">
+        {/* <button className="btn btn-primary">
           <i className="bi bi-plus-circle me-2"></i> Add Contact
-        </button>
+        </button> */}
       </div>
       <div className="table-responsive">
         <table className="table table-bordered table-hover mt-4">
@@ -56,26 +64,24 @@ const Contact = () => {
             </tr>
           </thead>
           <tbody>
-            {contacts.map((contact) => (
-              <tr key={contact.id}>
-                <td>{contact.id}</td>
+            {contacts.map((contact, index) => (
+              <tr key={contact._id}>
+                <td>{index + 1}</td>
                 <td className="fw-semibold">{contact.name}</td>
                 <td>{contact.email}</td>
-                <td>{contact.mobile || "N/A"}</td>
-                <td className="text-truncate">
-                  {contact.message}
-                </td>
-                <td>{contact.date}</td>
+                <td>{contact.phone || "N/A"}</td>
+                <td className="text-truncate">{contact.comment || "N/A"}</td>
+                <td>{new Date(contact.createdAt).toLocaleString()}</td>
                 <td className="d-flex gap-2">
-                  <button
+                  {/* <button
                     className="btn btn-info btn-sm"
-                    onClick={() => handleEdit(contact.id)}
+                    onClick={() => handleEdit(contact._id)}
                   >
                     <i className="bi bi-pencil-square"></i> Edit
-                  </button>
+                  </button> */}
                   <button
                     className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(contact.id)}
+                    onClick={() => handleDelete(contact._id)}
                   >
                     <i className="bi bi-trash3"></i> Delete
                   </button>

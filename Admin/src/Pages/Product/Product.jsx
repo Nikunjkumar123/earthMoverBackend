@@ -1,62 +1,59 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Product = () => {
-  const products = [
-    {
-      id: 1,
-      category: "TRACTOR",
-      name: "POWER STEERING KIT, SONALIKA RX-47",
-      machineName: "machine 1",
+  const [products, setProducts] = useState([]); // State for storing products
+  const navigate = useNavigate();
 
-      popular: false,
-      image: "path/to/image1.jpg",
-    },
-    {
-      id: 2,
-      category: "TRACTOR",
-      name: "POWER STEERING KIT, INT-DI XP PLUS (RANE MAKE), D-CYL",
-      machineName: "machine 2",
-      popular: false,
-      image: "path/to/image2.jpg",
-    },
-    {
-      id: 3,
-      category: "JCB",
-      name: "ORING BOX",
-      machineName: "machine 3",
-      popular: true,
-      image: "path/to/image3.jpg",
-    },
-    {
-      id: 4,
-      category: "TRACTOR",
-      name: "VALVE OIL SEAL",
-      machineName: "machine 4",
-      popular: false,
-      image: "path/to/image4.jpg",
-    },
-    {
-      id: 5,
-      category: "TRACTOR",
-      name: "SPINDLE KIT",
-      machineName: "machine 5",
-      popular: false,
-      image: "path/to/image5.jpg",
-    },
-  ];
+  // Fetch products from the API
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4040/admin/v1/categories"
+      );
+      const products = response.data.categories.flatMap((category) =>
+        category.subCategories.flatMap((subCategory) =>
+          (subCategory.products || []).map((product) => ({
+            ...product,
+            categoryId: category._id,
+            categoryName: category.category,
+            subCategoryId: subCategory._id,
+            subCategoryName: subCategory.Category,
+          }))
+        )
+      );
+      setProducts(products); // Update state with fetched products
+    } catch (error) {
+      console.error("Error fetching products:", error.message);
+    }
+  };
 
+  useEffect(() => {
+    fetchProducts(); // Call fetchProducts on component mount
+  }, []);
+
+  // Action handlers
   const handleActive = (id) => {
     console.log(`Product ${id} activated!`);
   };
 
-  const handleEdit = (id) => {
-    console.log(`Editing product with ID: ${id}`);
+  const handleEdit = (categoryId, subCategoryId, productId) => {
+    navigate(`/edit-subcategoriesP/${categoryId}/${subCategoryId}/${productId}`);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (product) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      console.log(`Deleting product with ID: ${id}`);
+      try {
+        const deleteUrl = `http://localhost:4040/admin/v1/edit-update/prod/${product.categoryId}/${product.subCategoryId}/${product._id}`;
+        await axios.delete(deleteUrl);
+        alert("Product deleted successfully!");
+        // Refresh the product list after deletion
+        setProducts(products.filter((p) => p._id !== product._id));
+      } catch (error) {
+        console.error("Error deleting product:", error.message);
+        alert("Failed to delete product. Please try again.");
+      }
     }
   };
 
@@ -74,49 +71,65 @@ const Product = () => {
             <tr>
               <th>#</th>
               <th>Category</th>
-              <th>Machine Name</th>
+              <th>Subcategory</th>
               <th>Company Name</th>
+              <th>Machine Name</th>
               <th>Image</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className={product.popular ? "table-success" : ""}>
-                <td>{product.id}</td>
-                <td>{product.category}</td>
-                <td className="fw-semibold">{product.name}</td>
-                <td className="fw-semibold">{product.machineName}</td>
-                <td>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="rounded"
-                    style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                  />
-                </td>
-                <td className="d-flex gap-2">
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => handleActive(product.id)}
-                  >
-                    <i className="bi bi-check-circle"></i> Active
-                  </button>
-                  <button
-                    className="btn btn-info btn-sm"
-                    onClick={() => handleEdit(product.id)}
-                  >
-                    <i className="bi bi-pencil-square"></i> Edit
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(product.id)}
-                  >
-                    <i className="bi bi-trash3"></i> Delete
-                  </button>
+            {products.length > 0 ? (
+              products.map((product, index) => (
+                <tr key={product._id}>
+                  <td>{index + 1}</td>
+                  <td>{product.categoryName}</td>
+                  <td>{product.subCategoryName}</td>
+                  <td>{product.CompanyName}</td>
+                  <td>{product.MachineName}</td>
+                  <td>
+                    <img
+                      src={product.Image[0] || product.Image}
+                      alt={product.MachineName}
+                      className="rounded"
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </td>
+                  <td className="d-flex gap-2">
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={() => handleActive(product._id)}
+                    >
+                      <i className="bi bi-check-circle"></i> Active
+                    </button>
+                    {/* <button
+                      className="btn btn-info btn-sm"
+                      onClick={() =>
+                        handleEdit(product.categoryId, product.subCategoryId, product._id)
+                      }
+                    >
+                      <i className="bi bi-pencil-square"></i> Edit
+                    </button> */}
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(product)}
+                    >
+                      <i className="bi bi-trash3"></i> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center">
+                  No products found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

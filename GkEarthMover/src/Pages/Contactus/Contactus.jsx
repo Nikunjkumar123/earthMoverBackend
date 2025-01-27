@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import "./Contact.css";
 import { FaPhoneAlt } from "react-icons/fa";
 import { IoLocation, IoMail } from "react-icons/io5";
 import Swal from "sweetalert2";
+import "./Contact.css";
 
 const Contactus = () => {
+  // Scroll to top when the page loads
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -21,37 +22,34 @@ const Contactus = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    data.access_key = "007fd149-ccb4-4fcb-a57a-0b627d71f057";
-
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch("http://localhost:4040/admin/v1/user/contact-us", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
         body: JSON.stringify(data),
       });
 
       const res = await response.json();
 
-      if (res.success) {
+      if (response.ok) {
         Swal.fire({
-          title: "Good job!",
-          text: "Inquiry sent successfully!",
+          title: "Success!",
+          text: "Your inquiry has been submitted successfully.",
           icon: "success",
         });
-        reset(); // Clear form inputs after submission
+        reset(); // Reset form after successful submission
       } else {
         Swal.fire({
-          title: "Oops!",
-          text: "Something went wrong. Please try again.",
+          title: "Error!",
+          text: res.message || "Something went wrong. Please try again.",
           icon: "error",
         });
       }
     } catch (error) {
       Swal.fire({
-        title: "Error",
+        title: "Error!",
         text: "Network error. Please try again later.",
         icon: "error",
       });
@@ -98,7 +96,7 @@ const Contactus = () => {
               <div className="col-md-3 info-box">
                 <IoMail className="icon" />
                 <p>
-                  <a href="mailto: Dushadinfraproject@gmail.com">
+                  <a href="mailto:Dushadinfraproject@gmail.com">
                     Dushadinfraproject@gmail.com
                   </a>
                   <a href="mailto:Gkearthmover88@gmail.com">
@@ -109,8 +107,8 @@ const Contactus = () => {
               <div className="col-md-3 info-box">
                 <FaPhoneAlt className="icon" />
                 <p>
-                  <a href="tel:+919350619539">+91 9350619539 </a>
-                  <a href="tel:+919810174170">+91 9810174170 </a>
+                  <a href="tel:+919350619539">+91 9350619539</a>
+                  <a href="tel:+919810174170">+91 9810174170</a>
                 </p>
               </div>
             </div>
@@ -157,18 +155,14 @@ const Contactus = () => {
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <input
-                      type="Number"
+                      type="text"
                       className="form-control"
                       placeholder="Phone"
                       {...register("phone", {
                         required: "Phone number is required",
                         minLength: {
                           value: 10,
-                          message: "Phone number must be 10 digits",
-                        },
-                        maxLength: {
-                          value: 10,
-                          message: "Phone number cannot exceed 10 digits",
+                          message: "Phone number must be at least 10 digits",
                         },
                       })}
                     />
@@ -181,12 +175,12 @@ const Contactus = () => {
                       type="text"
                       className="form-control"
                       placeholder="Area, City"
-                      {...register("location", {
-                        required: "Location is required",
+                      {...register("address", {
+                        required: "Address is required",
                       })}
                     />
                     <span className="text-danger">
-                      {errors.location && <p>{errors.location.message}</p>}
+                      {errors.address && <p>{errors.address.message}</p>}
                     </span>
                   </div>
                 </div>
@@ -227,6 +221,7 @@ const Contactus = () => {
         </div>
       </section>
 
+      {/* Google Maps Embed */}
       <section>
         <div className="container-fluid mb-3">
           <div className="row">

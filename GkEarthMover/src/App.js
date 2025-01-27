@@ -18,7 +18,7 @@ function App() {
         <Route path="/Aboutus" element={<Aboutus />} />
         <Route path="/Equipmentspage" element={<Equipmentpage />} />
         <Route path="/Contactus" element={<Contactus />} />
-        <Route path="/subEquipment" element={<SubEquipment />} />
+        <Route path="/subEquipment/:categoryId/:subCategoryId" element={<SubEquipment />} />
         </Routes>
         <Footer />
       </BrowserRouter>

@@ -5,9 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 const EditSubCategory = () => {
   const [subCategory, setSubCategory] = useState({
     Category: "",
-    MachineName: "",
     CompanyName: "",
-    Image: null, 
+    Image: null,
   });
   const [imagePreview, setImagePreview] = useState("");
   const [error, setError] = useState("");
@@ -25,30 +24,19 @@ const EditSubCategory = () => {
       }
 
       try {
-        const response = await axios.get("http://localhost:4040/admin/v1/categories");
-        const foundCategory = response.data.categories.find(
-          (category) =>
-            category._id === categoryId && category.subCategories.some((sub) => sub._id === subCategoryId)
+        const response = await axios.get(
+          `http://localhost:4040/admin/v1/categories/edit-update/${categoryId}/${subCategoryId}`
         );
 
-        if (foundCategory) {
-          const subCategoryData = foundCategory.subCategories.find(
-            (sub) => sub._id === subCategoryId
-          );
+        const subCategoryData = response.data;
 
-          console.log(subCategoryData?.Category); // Logs the subcategory name
+        setSubCategory({
+          Category: subCategoryData.Category, // Use the data fetched from the API
+          CompanyName: subCategoryData.CompanyName || "",
+          Image: subCategoryData.Image || null,
+        });
 
-          setSubCategory({
-            Category: foundCategory.category, // Updated to use the category name
-            MachineName: subCategoryData?.MachineName || "",
-            CompanyName: subCategoryData?.CompanyName || "",
-            Image: subCategoryData?.Image || null,
-          });
-
-          setImagePreview(subCategoryData?.Image || "");
-        } else {
-          setError("Subcategory not found");
-        }
+        setImagePreview(subCategoryData.Image || "");
       } catch (err) {
         console.error(err);
         setError("Error fetching subcategory details");
@@ -72,7 +60,7 @@ const EditSubCategory = () => {
     e.preventDefault();
 
     // Validate input fields
-    if (!subCategory.MachineName || !subCategory.CompanyName) {
+    if ( !subCategory.CompanyName) {
       setError("All fields are required");
       return;
     }
@@ -83,7 +71,7 @@ const EditSubCategory = () => {
     // Create FormData for the request
     const formData = new FormData();
     formData.append("Category", subCategory.Category); // Use category name here
-    formData.append("MachineName", subCategory.MachineName);
+    // formData.append("MachineName", subCategory.MachineName);
     formData.append("CompanyName", subCategory.CompanyName);
 
     if (subCategory.Image instanceof File) {
@@ -114,7 +102,7 @@ const EditSubCategory = () => {
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">sub category Name</label>
+          <label className="form-label">Subcategory Name</label>
           <input
             type="text"
             className="form-control"
@@ -125,7 +113,7 @@ const EditSubCategory = () => {
             required
           />
         </div>
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Machine Name</label>
           <input
             type="text"
@@ -136,7 +124,7 @@ const EditSubCategory = () => {
             }
             required
           />
-        </div>
+        </div> */}
         <div className="mb-3">
           <label className="form-label">Company Name</label>
           <input

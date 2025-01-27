@@ -54,7 +54,6 @@ const Categories = () => {
             <tr>
               <th>#</th>
               <th>Categories</th>
-              <th>Image</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -63,7 +62,7 @@ const Categories = () => {
               <tr key={data._id} className="align-middle">
                 <td>{index + 1}</td>
                 <td className="fw-semibold">{data.category}</td>
-                <td>
+                {/* <td>
                   <a
                     href={data.image} // Ensure this field matches your API response
                     target="_blank"
@@ -76,7 +75,7 @@ const Categories = () => {
                       style={{ width: "100px", height: "100px", objectFit: "cover" }}
                     />
                   </a>
-                </td>
+                </td> */}
                 <td>
                   <button
                     className="btn btn-primary btn-sm me-2"

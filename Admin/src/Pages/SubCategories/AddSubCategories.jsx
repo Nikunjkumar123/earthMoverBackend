@@ -5,7 +5,6 @@ const AddSubCategories = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [subCategoryName, setSubCategoryName] = useState("");
-  const [machineName, setmachineName] = useState(""); // Added company name state
   const [companyName, setCompanyName] = useState(""); // Added company name state
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -35,8 +34,8 @@ const AddSubCategories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedCategory) {
-      setError("Please select a category first");
+    if (!selectedCategory || !subCategoryName || !companyName || !image) {
+      setError("Please fill all fields");
       return;
     }
     setLoading(true);
@@ -44,9 +43,9 @@ const AddSubCategories = () => {
 
     const formData = new FormData();
     formData.append("Category", subCategoryName);
-    formData.append("MachineName", machineName);
     formData.append("CompanyName", companyName); 
     formData.append("image", image); 
+
     try {
       // Send POST request to add subcategory under selected category
       await axios.post(
@@ -87,7 +86,7 @@ const AddSubCategories = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 required
               >
-                <option value="" >
+                <option value="">
                   -- Select a Category --
                 </option>
                 {categories.map((category) => (
@@ -101,7 +100,7 @@ const AddSubCategories = () => {
             {/* Subcategory Name Input */}
             <div className="mb-3">
               <label htmlFor="subcategoryName" className="form-label">
-                Sub category Name
+                Subcategory Name
               </label>
               <input
                 type="text"
@@ -110,22 +109,6 @@ const AddSubCategories = () => {
                 placeholder="Enter subcategory name"
                 value={subCategoryName}
                 onChange={(e) => setSubCategoryName(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* machine Name Input */}
-            <div className="mb-3">
-              <label htmlFor="subcategoryName" className="form-label">
-                Machine Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="subcategoryName"
-                placeholder="Enter subcategory name"
-                value={machineName}
-                onChange={(e) => setmachineName(e.target.value)}
                 required
               />
             </div>

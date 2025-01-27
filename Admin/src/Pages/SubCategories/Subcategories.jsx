@@ -3,24 +3,18 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 const Subcategories = () => {
-  const [subCategories, setSubCategories] = useState([]);
+  const [categories, setCategories] = useState([]); // Fetch categories and subcategories together
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  // Fetch subcategories from the API
+  // Fetch categories and subcategories from the API
   const fetchCategories = async () => {
     try {
       const response = await axios.get("http://localhost:4040/admin/v1/categories");
-      const allSubCategories = response.data.categories.flatMap((category) =>
-        category.subCategories.map((subCategory) => ({
-          ...subCategory,
-          categoryId: category._id, // Add categoryId to each subCategory
-        }))
-      );
-      setSubCategories(allSubCategories);
+      setCategories(response.data.categories);
     } catch (err) {
-      setError(`Error fetching subcategories: ${err.message}`);
+      setError(`Error fetching categories: ${err.message}`);
     }
   };
 
@@ -39,8 +33,14 @@ const Subcategories = () => {
           `http://localhost:4040/admin/v1/categories/edit-update/${categoryId}/${subCategoryId}`
         );
         if (response.status === 200) {
-          setSubCategories((prev) =>
-            prev.filter((subCategory) => subCategory._id !== subCategoryId)
+          // Update the local state to remove the deleted subcategory
+          setCategories((prevCategories) =>
+            prevCategories.map((category) => ({
+              ...category,
+              subCategories: category.subCategories.filter(
+                (subCategory) => subCategory._id !== subCategoryId
+              ),
+            }))
           );
         }
       } catch (err) {
@@ -50,65 +50,71 @@ const Subcategories = () => {
     }
   };
 
+  let counter = 1; // Initialize counter
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Subcategories</h2>
-      <Link to="/add-subcategories" className="btn btn-primary">
+      <Link to="/add-subcategories" className="btn btn-primary mb-3">
         + Add Sub Categories
       </Link>
-      {error && <div className="alert alert-danger mt-3">{error}</div>}
-      <table className="table table-bordered table-hover mt-4">
+      {error && <div className="alert alert-danger">{error}</div>}
+      <table className="table table-bordered table-hover">
         <thead className="table-dark">
           <tr>
             <th>#</th>
+            <th>Category</th>
             <th>Sub Category</th>
-            <th>Machine Name</th>
             <th>Company Name</th>
             <th>Image</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {subCategories.length > 0 ? (
-            subCategories.map((subCategory, index) => (
-              <tr key={subCategory._id}>
-                <td>{index + 1}</td>
-                <td>{subCategory.Category}</td>
-                <td>{subCategory.MachineName}</td>
-                <td>{subCategory.CompanyName}</td>
-                <td>
-                  <img
-                    src={subCategory.Image}
-                    alt={subCategory.Category}
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </td>
-                <td>
-                  <div className="d-flex align-items-center">
-                    <button
-                      className="btn btn-sm btn-primary me-2"
-                      onClick={() => handleEdit(subCategory.categoryId, subCategory._id)}
-                    >
-                      <i className="bi bi-pencil-square"></i> Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleDelete(subCategory.categoryId, subCategory._id)}
-                    >
-                      <i className="bi bi-trash"></i> Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
+          {categories.length > 0 ? (
+            categories.flatMap((category) =>
+              category.subCategories.map((subCategory) => {
+                return (
+                  <tr key={subCategory._id}>
+                    <td>{counter++}</td> {/* Continuous counter */}
+                    <td>{category.category}</td> {/* Display Category Name */}
+                    <td>{subCategory.Category}</td> {/* Display Sub Category Name */}
+                    <td>{subCategory.CompanyName}</td> {/* Display Company Name */}
+                    <td>
+                      <img
+                        src={subCategory.Image}
+                        alt={subCategory.Category}
+                        style={{
+                          width: "60px",
+                          height: "60px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <button
+                          className="btn btn-sm btn-primary me-2"
+                          onClick={() => handleEdit(category._id, subCategory._id)}
+                        >
+                          <i className="bi bi-pencil-square"></i> Edit
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleDelete(category._id, subCategory._id)}
+                        >
+                          <i className="bi bi-trash"></i> Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 No subcategories available.
               </td>
             </tr>

@@ -1,76 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
-import AshokLealand from "../../Assets/Ashok Lealand Tipper 1.jpg";
-import Sany135 from "../../Assets/Sany135.webp";
-import leeboy_985 from "../../Assets/leeboy_985 Grader.webp";
-import escortMini from "../../Assets/Roller-Minicase.png";
-import escortBaby from "../../Assets/escorts-ec-3664-Baby Roller.jpg";
-import escortCompactor from "../../Assets/Escorts-5250-Soil Compactor.webp";
+import { useParams } from "react-router-dom";
 
 const SubEquipment = () => {
+  const { categoryId, subCategoryId } = useParams(); // Extract categoryId and subCategoryId from the URL
 
-    useEffect(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-      }, []);
-    
-
-  const equipmentData = [
-    {
-      id: 1,
-      name: "Grader LiuGong CLG-414",
-      category: "Moter Grader",
-      image: AshokLealand,
-      deliveryInfo: "LiuGang India Private Limited",
-      specs: ["Model - CLG4160D"],
-    },
-    {
-      id: 3,
-      name: "TATA HITACHI-200LC",
-      category: "Excavator Machine",
-      image: Sany135,
-      deliveryInfo: "TATA Hitachi",
-      specs: [],
-    },
-    {
-      id: 12,
-      name: "HYVA-2844",
-      category: "Dumper/Hywa",
-      image: leeboy_985,
-      deliveryInfo: "Tata Motors",
-      specs: ["Model - HYVA-8899"],
-    },
-    {
-      id: 18,
-      name: "Backhoe Loader Case-9868",
-      category: "Backhoe Loader/JCB",
-      image: escortMini,
-      deliveryInfo: "Case Constructions",
-      specs: [],
-    },
-    {
-      id: 23,
-      name: "Case -1107 Roller",
-      category: "Soil Compactor/Roller",
-      image: escortBaby,
-      deliveryInfo: "Case New Holland",
-      specs: [],
-    },
-    {
-      id: 31,
-      name: "Sany Stc1000",
-      category: "Cran",
-      image: escortCompactor,
-      deliveryInfo: "Sany Heavy Industry India Pvt. Ltd.",
-      specs: [],
-    },
-  ];
-
+  const [equipmentData, setEquipmentData] = useState([]); // State to hold the dynamic equipment data
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
+
+  // Fetch equipment data when categoryId or subCategoryId changes
+  useEffect(() => {
+    const fetchEquipmentData = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:4040/admin/v1/categories/${categoryId}/subcategories/${subCategoryId}/products`
+        );
+        const data = await response.json();
+
+        if (data && data.products) {
+          setEquipmentData(data.products); // Correctly set equipmentData from the 'products' key
+        }
+      } catch (error) {
+        console.error("Error fetching equipment data:", error);
+        Swal.fire({
+          title: "Error",
+          text: "Failed to fetch equipment data. Please try again later.",
+          icon: "error",
+        });
+      }
+    };
+
+    if (categoryId && subCategoryId) {
+      fetchEquipmentData(); // Only fetch data if both categoryId and subCategoryId are available
+    }
+  }, [categoryId, subCategoryId]); // Trigger fetch when either categoryId or subCategoryId changes
 
   const openModal = (equipment) => {
     setSelectedEquipment(equipment);
@@ -82,6 +47,7 @@ const SubEquipment = () => {
     setIsModalOpen(false);
   };
 
+  // React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -89,44 +55,67 @@ const SubEquipment = () => {
     reset,
   } = useForm();
 
-  const onSubmit = async (data) => {
-    data.access_key = "007fd149-ccb4-4fcb-a57a-0b627d71f057";
-
+  const onSubmit = async (formData) => {
+    // Combine the form data with the selected equipment data
+    const combinedData = {
+      ...formData, // Spread the form data from react-hook-form
+      equipmentName: selectedEquipment.MachineName, // Directly include equipmentName
+      company: selectedEquipment.CompanyName, // Directly include company
+    };
+  
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const res = await response.json();
-
-      if (res.success) {
+      // Log the combined data for debugging
+      console.log("Form Data:", combinedData);
+  
+      const response = await fetch(
+        `http://localhost:4040/admin/v1/user/contact`, 
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(combinedData),
+        }
+      );
+  
+      // Check if response is ok (status 200-299)
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+  
+      const res = await response.json(); // Parse the response JSON
+  
+      // Log the response to check its structure
+      console.log("Server Response:", res.msg);
+  
+      if (res.msg == 'Equipment details added successfully') {
         Swal.fire({
           title: "Good job!",
           text: "Inquiry sent successfully!",
           icon: "success",
         });
-        reset();
+        reset(); // Reset the form after successful submission
+        closeModal(); // Close the modal after submission
       } else {
+        // If the response does not have success, display an error message
         Swal.fire({
           title: "Oops!",
-          text: "Something went wrong. Please try again.",
+          text: res.message || "Something went wrong. Please try again.",
           icon: "error",
         });
       }
     } catch (error) {
+      // Handle network errors or any other issues
+      console.error("Error during submission:", error);
       Swal.fire({
         title: "Error",
-        text: "Network error. Please try again later.",
+        text: error.message || "Network error. Please try again later.",
         icon: "error",
       });
     }
   };
-
+  
   return (
     <>
       <div className="container RentalEquipment">
@@ -137,37 +126,43 @@ const SubEquipment = () => {
 
           {/* Equipment Cards */}
           <div className="row m-0 p-0">
-            {equipmentData.map((equipment) => (
-              <div key={equipment.id} className="col-lg-4 col-md-6">
-                <div className="card equipment-card">
-                  <div className="equipment-img">
-                    <img
-                      src={equipment.image}
-                      className="card-img-top"
-                      alt={equipment.name}
-                    />
-                  </div>
-                  <div className="card-body">
-                    <h2 className="card-title">{equipment.name}</h2>
-                    <hr />
-                    <h4 className="delivery-info">{equipment.deliveryInfo}</h4>
-                    <ul className="specs-list">
-                      {equipment.specs.map((spec, index) => (
-                        <h5 key={index}>{spec}</h5>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="card-footer">
-                    <button
-                      className="reserve-btn"
-                      onClick={() => openModal(equipment)}
-                    >
-                      Reserve
-                    </button>
+            {equipmentData.length > 0 ? (
+              equipmentData.map((equipment) => (
+                <div key={equipment._id} className="col-lg-4 col-md-6">
+                  <div className="card equipment-card">
+                    <div className="equipment-img">
+                      <img
+                        src={equipment.Image[0]} // Assuming Image is an array, using the first item
+                        className="card-img-top"
+                        alt={equipment.MachineName}
+                      />
+                    </div>
+                    <div className="card-body">
+                      <h2 className="card-title">{equipment.MachineName}</h2>
+                      <hr />
+                      <h4 className="delivery-info">{equipment.CompanyName}</h4>
+                      {/* Handle specs if it's an array */}
+                      <ul className="specs-list">
+                        {equipment.specs &&
+                          equipment.specs.map((spec, index) => (
+                            <h5 key={index}>{spec}</h5>
+                          ))}
+                      </ul>
+                    </div>
+                    <div className="card-footer">
+                      <button
+                        className="reserve-btn"
+                        onClick={() => openModal(equipment)} // Open modal with selected equipment data
+                      >
+                        Reserve
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>Loading equipment data...</p> // Loading message while data is being fetched
+            )}
           </div>
         </div>
       </div>
@@ -185,8 +180,8 @@ const SubEquipment = () => {
                 <label>Equipment Name:</label>
                 <input
                   type="text"
-                  value={selectedEquipment.name}
-                  {...register("Equipment Name")}
+                  value={selectedEquipment.MachineName}
+                  {...register("equipmentName")}
                   readOnly
                 />
               </div>
@@ -194,8 +189,8 @@ const SubEquipment = () => {
                 <label>Company Name:</label>
                 <input
                   type="text"
-                  value={selectedEquipment.deliveryInfo}
-                  {...register("Equipment Company")}
+                  value={selectedEquipment.CompanyName}
+                  {...register("company")}
                   readOnly
                 />
               </div>
@@ -257,14 +252,13 @@ const SubEquipment = () => {
               <div className="form-group">
                 <label>Address:</label>
                 <textarea
-                  type="text"
                   placeholder="Address"
-                  {...register("location", {
+                  {...register("address", {
                     required: "Location is required",
                   })}
                 />
                 <span className="text-danger">
-                  {errors.location && <p>{errors.location.message}</p>}
+                  {errors.address && <p>{errors.address.message}</p>}
                 </span>
               </div>
               <div className="form-actions">
